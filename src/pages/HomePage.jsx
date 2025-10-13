@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetchProjects } from "../api/projectApi";
+import './HomePage.css';
 
 export default function HomePage() {
   const [projects, setProjects] = useState([]);
@@ -23,18 +24,21 @@ export default function HomePage() {
 
   return (
     <div>
-      <h1>Liste des projets</h1>
-      {projects.length === 0 ? (
-        <p>Aucun projet trouvé.</p>
-      ) : (
-        <ul>
-          {projects.map(p => (
-            <li key={p.id}>
-              <strong>{p.name}</strong> — {p.description}
-            </li>
-          ))}
-        </ul>
-      )}
+        <h1>Liste des projets</h1>
+        <div className="project-list">
+            {projects.length === 0 ? (
+                <p>Aucun projet trouvé.</p>
+            ) : (
+                <ul>
+                {projects.map(p => (
+                    <div key={p.id} className="project-item">
+                    <span className="project-name">{p.name}</span>
+                    <span className="project-description">{p.description}</span>
+                    </div>
+                ))}
+                </ul>
+            )}
+      </div>
     </div>
   );
 }
