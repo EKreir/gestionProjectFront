@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
-import { fetchUsers } from './api/userApi';
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { fetchUsers } from "./api/userApi";
+import LoginPage from "./pages/LoginPage";
 
-function App() {
+function UsersPage() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
@@ -19,6 +21,22 @@ function App() {
         ))}
       </ul>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <nav style={{ marginBottom: "20px" }}>
+        <Link to="/">Accueil</Link> |{" "}
+        <Link to="/login">Connexion</Link>
+      </nav>
+
+      <Routes>
+        <Route path="/" element={<UsersPage />} />
+        <Route path="/login" element={<LoginPage />} />
+      </Routes>
+    </Router>
   );
 }
 
