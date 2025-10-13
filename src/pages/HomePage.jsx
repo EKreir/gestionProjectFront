@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetchProjects } from "../api/projectApi";
+import { Link } from "react-router-dom";
 import './HomePage.css';
 
 export default function HomePage() {
@@ -23,22 +24,32 @@ export default function HomePage() {
   if (error) return <p>Erreur : {error}</p>;
 
   return (
-    <div>
-        <h1>Liste des projets</h1>
-        <div className="project-list">
-            {projects.length === 0 ? (
-                <p>Aucun projet trouvé.</p>
-            ) : (
-                <ul>
-                {projects.map(p => (
-                    <div key={p.id} className="project-item">
-                    <span className="project-name">{p.name}</span>
-                    <span className="project-description">{p.description}</span>
-                    </div>
-                ))}
-                </ul>
-            )}
-      </div>
+  <div>
+    <h1>Liste des projets</h1>
+
+    <div className="project-list">
+      {projects.length === 0 ? (
+        <p>Aucun projet trouvé.</p>
+      ) : (
+        <ul style={{ listStyle: "none", padding: 0 }}>
+          {projects.map((p) => (
+            <li key={p.id} style={{ marginBottom: "10px" }}>
+              <Link
+                to={`/projects/${p.id}`}
+                className="project-item"
+              >
+                <strong className="project-name">{p.name}</strong>
+                <p
+                  className="project-description"
+                >
+                  {p.description}
+                </p>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
-  );
+  </div>
+);
 }
