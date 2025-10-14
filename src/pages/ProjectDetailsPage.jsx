@@ -1,27 +1,31 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { fetchProjectById } from "../api/projectApi";
-import { fetchTasksByProjectId, createTask } from "../api/taskApi";
+import { fetchTasksByProjectId } from "../api/taskApi";
 import "./ProjectDetailsPage.css";
 
 export default function ProjectDetailsPage() {
   const { id } = useParams();
   const [project, setProject] = useState(null);
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState({ TODO: [], IN_PROGRESS: [], DONE: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showForm, setShowForm] = useState(false);
-  const [newTask, setNewTask] = useState({ title: "", description: "" });
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [projData, taskData] = await Promise.all([
-          fetchProjectById(id),
-          fetchTasksByProjectId(id)
-        ]);
+        const projData = await fetchProjectById(id);
+        const taskData = await fetchTasksByProjectId(id);
+
+        const grouped = {
+          TODO: taskData.filter((t) => t.status === "TODO"),
+          IN_PROGRESS: taskData.filter((t) => t.status === "IN_PROGRESS"),
+          DONE: taskData.filter((t) => t.status === "DONE"),
+        };
+
         setProject(projData);
-        setTasks(taskData);
+        setTasks(grouped);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -31,24 +35,42 @@ export default function ProjectDetailsPage() {
     loadData();
   }, [id]);
 
-  async function handleCreateTask(e) {
-    e.preventDefault();
-    if (!newTask.title.trim()) return alert("Le titre de la tâche est obligatoire.");
-
+  async function updateTaskStatus(taskId, newStatus) {
     try {
-      const created = await createTask({
-        title: newTask.title,
-        description: newTask.description,
-        status: "TODO", // Statut initial attendu par ton back
-        projectId: id,
-      });
-
-      setTasks([...tasks, created]);
-      setShowForm(false);
-      setNewTask({ title: "", description: "" });
+      await fetch(`/api/tasks/${taskId}/status?status=${newStatus}`, { method: "PATCH" });
     } catch (err) {
-      alert("Erreur lors de la création de la tâche : " + err.message);
+      console.error("Erreur lors de la mise à jour du statut :", err);
     }
+  }
+
+  function onDragEnd(result) {
+    const { source, destination } = result;
+    if (!destination) return;
+
+    // Même colonne → juste réorganisation locale
+    if (source.droppableId === destination.droppableId) {
+      const newColumn = Array.from(tasks[source.droppableId]);
+      const [moved] = newColumn.splice(source.index, 1);
+      newColumn.splice(destination.index, 0, moved);
+      setTasks({ ...tasks, [source.droppableId]: newColumn });
+      return;
+    }
+
+    // Déplacement entre colonnes
+    const sourceTasks = Array.from(tasks[source.droppableId]);
+    const destTasks = Array.from(tasks[destination.droppableId]);
+    const [moved] = sourceTasks.splice(source.index, 1);
+    moved.status = destination.droppableId;
+
+    destTasks.splice(destination.index, 0, moved);
+
+    setTasks({
+      ...tasks,
+      [source.droppableId]: sourceTasks,
+      [destination.droppableId]: destTasks,
+    });
+
+    updateTaskStatus(moved.id, destination.droppableId);
   }
 
   if (loading) return <p>Chargement du projet...</p>;
@@ -64,7 +86,7 @@ export default function ProjectDetailsPage() {
 
   return (
     <div className="project-details">
-      <h1 style={{ color: "#333" }}>{project.name}</h1>
+      <h1>{project.name}</h1>
       <p className="description">{project.description}</p>
 
       <button className="add-task-btn" onClick={() => setShowForm(!showForm)}>
@@ -105,11 +127,11 @@ export default function ProjectDetailsPage() {
                   <h4>{t.title}</h4>
                   <p>{t.description}</p>
                 </div>
-              ))
-            )}
-          </div>
-        ))}
-      </div>
+              )}
+            </Droppable>
+          ))}
+        </div>
+      </DragDropContext>
     </div>
   );
 }
