@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { fetchProjectById } from "../api/projectApi";
 import { fetchTasksByProjectId, createTask } from "../api/taskApi";
 import "./ProjectDetailsPage.css";
@@ -40,7 +39,7 @@ export default function ProjectDetailsPage() {
       const created = await createTask({
         title: newTask.title,
         description: newTask.description,
-        status: "TODO",
+        status: "TODO", // Statut initial attendu par ton back
         projectId: id,
       });
 
@@ -52,41 +51,11 @@ export default function ProjectDetailsPage() {
     }
   }
 
-  async function updateTaskStatus(taskId, newStatus) {
-    try {
-      await fetch(`/api/tasks/${taskId}/status?status=${newStatus}`, { method: "PATCH" });
-    } catch (err) {
-      console.error("Erreur lors de la mise à jour du statut :", err);
-    }
-  }
-
-  function onDragEnd(result) {
-    const { source, destination } = result;
-    if (!destination) return;
-
-    const sourceTasks = tasks.filter(t => t.status === source.droppableId);
-    const destTasks = tasks.filter(t => t.status === destination.droppableId);
-    const [moved] = sourceTasks.splice(source.index, 1);
-
-    // Mise à jour du statut si la colonne change
-    if (source.droppableId !== destination.droppableId) {
-      moved.status = destination.droppableId;
-      updateTaskStatus(moved.id, moved.status);
-    }
-
-    // Réordonner les tâches localement
-    const newTasks = tasks
-      .filter(t => t.id !== moved.id)
-      .concat(moved);
-
-    setTasks(newTasks);
-  }
-
   if (loading) return <p>Chargement du projet...</p>;
   if (error) return <p>Erreur : {error}</p>;
-  if (!project) return <p>Projet introuvable.</p>;
-
-  // Regroupement des tâches par statut pour le rendu
+  if (!project) return <p>Projet introuvable.</p>; 
+  
+  // Regroupement des tâches par statut
   const groupedTasks = {
     TODO: tasks.filter(t => t.status === "TODO"),
     IN_PROGRESS: tasks.filter(t => t.status === "IN_PROGRESS"),
@@ -119,49 +88,28 @@ export default function ProjectDetailsPage() {
           <button type="submit">Créer</button>
         </form>
       )}
+  <div className="kanban-board">
+        {["TODO", "IN_PROGRESS", "DONE"].map((status) => (
+          <div key={status} className="kanban-column">
+            <h3>
+              {status === "TODO" && "📝 À faire"}
+              {status === "IN_PROGRESS" && "⚙️ En cours"}
+              {status === "DONE" && "✅ Terminées"}
+            </h3>
 
-      <DragDropContext onDragEnd={onDragEnd}>
-        <div className="kanban-board">
-          {["TODO", "IN_PROGRESS", "DONE"].map((status) => (
-            <Droppable droppableId={status} key={status}>
-              {(provided) => (
-                <div
-                  className="kanban-column"
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                >
-                  <h3>
-                    {status === "TODO" && "📝 À faire"}
-                    {status === "IN_PROGRESS" && "⚙️ En cours"}
-                    {status === "DONE" && "✅ Terminées"}
-                  </h3>
-
-                  {groupedTasks[status].length === 0 ? (
-                    <p className="empty-column">Aucune tâche</p>
-                  ) : (
-                    groupedTasks[status].map((t, index) => (
-                      <Draggable key={t.id} draggableId={t.id.toString()} index={index}>
-                        {(provided) => (
-                          <div
-                            className="task-card"
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                          >
-                            <h4>{t.title}</h4>
-                            <p>{t.description}</p>
-                          </div>
-                        )}
-                      </Draggable>
-                    ))
-                  )}
-                  {provided.placeholder}
+            {groupedTasks[status].length === 0 ? (
+              <p className="empty-column">Aucune tâche</p>
+            ) : (
+              groupedTasks[status].map((t) => (
+                <div key={t.id} className="task-card">
+                  <h4>{t.title}</h4>
+                  <p>{t.description}</p>
                 </div>
-              )}
-            </Droppable>
-          ))}
-        </div>
-      </DragDropContext>
+              ))
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
