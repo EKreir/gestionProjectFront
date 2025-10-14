@@ -2,30 +2,27 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { fetchProjectById } from "../api/projectApi";
-import { fetchTasksByProjectId } from "../api/taskApi";
+import { fetchTasksByProjectId, createTask } from "../api/taskApi";
 import "./ProjectDetailsPage.css";
 
 export default function ProjectDetailsPage() {
   const { id } = useParams();
   const [project, setProject] = useState(null);
-  const [tasks, setTasks] = useState({ TODO: [], IN_PROGRESS: [], DONE: [] });
+  const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [newTask, setNewTask] = useState({ title: "", description: "" });
 
   useEffect(() => {
     async function loadData() {
       try {
-        const projData = await fetchProjectById(id);
-        const taskData = await fetchTasksByProjectId(id);
-
-        const grouped = {
-          TODO: taskData.filter((t) => t.status === "TODO"),
-          IN_PROGRESS: taskData.filter((t) => t.status === "IN_PROGRESS"),
-          DONE: taskData.filter((t) => t.status === "DONE"),
-        };
-
+        const [projData, taskData] = await Promise.all([
+          fetchProjectById(id),
+          fetchTasksByProjectId(id)
+        ]);
         setProject(projData);
-        setTasks(grouped);
+        setTasks(taskData);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -34,6 +31,26 @@ export default function ProjectDetailsPage() {
     }
     loadData();
   }, [id]);
+
+  async function handleCreateTask(e) {
+    e.preventDefault();
+    if (!newTask.title.trim()) return alert("Le titre de la tâche est obligatoire.");
+
+    try {
+      const created = await createTask({
+        title: newTask.title,
+        description: newTask.description,
+        status: "TODO",
+        projectId: id,
+      });
+
+      setTasks([...tasks, created]);
+      setShowForm(false);
+      setNewTask({ title: "", description: "" });
+    } catch (err) {
+      alert("Erreur lors de la création de la tâche : " + err.message);
+    }
+  }
 
   async function updateTaskStatus(taskId, newStatus) {
     try {
@@ -47,37 +64,29 @@ export default function ProjectDetailsPage() {
     const { source, destination } = result;
     if (!destination) return;
 
-    // Même colonne → juste réorganisation locale
-    if (source.droppableId === destination.droppableId) {
-      const newColumn = Array.from(tasks[source.droppableId]);
-      const [moved] = newColumn.splice(source.index, 1);
-      newColumn.splice(destination.index, 0, moved);
-      setTasks({ ...tasks, [source.droppableId]: newColumn });
-      return;
+    const sourceTasks = tasks.filter(t => t.status === source.droppableId);
+    const destTasks = tasks.filter(t => t.status === destination.droppableId);
+    const [moved] = sourceTasks.splice(source.index, 1);
+
+    // Mise à jour du statut si la colonne change
+    if (source.droppableId !== destination.droppableId) {
+      moved.status = destination.droppableId;
+      updateTaskStatus(moved.id, moved.status);
     }
 
-    // Déplacement entre colonnes
-    const sourceTasks = Array.from(tasks[source.droppableId]);
-    const destTasks = Array.from(tasks[destination.droppableId]);
-    const [moved] = sourceTasks.splice(source.index, 1);
-    moved.status = destination.droppableId;
+    // Réordonner les tâches localement
+    const newTasks = tasks
+      .filter(t => t.id !== moved.id)
+      .concat(moved);
 
-    destTasks.splice(destination.index, 0, moved);
-
-    setTasks({
-      ...tasks,
-      [source.droppableId]: sourceTasks,
-      [destination.droppableId]: destTasks,
-    });
-
-    updateTaskStatus(moved.id, destination.droppableId);
+    setTasks(newTasks);
   }
 
   if (loading) return <p>Chargement du projet...</p>;
   if (error) return <p>Erreur : {error}</p>;
-  if (!project) return <p>Projet introuvable.</p>; 
-  
-  // Regroupement des tâches par statut
+  if (!project) return <p>Projet introuvable.</p>;
+
+  // Regroupement des tâches par statut pour le rendu
   const groupedTasks = {
     TODO: tasks.filter(t => t.status === "TODO"),
     IN_PROGRESS: tasks.filter(t => t.status === "IN_PROGRESS"),
@@ -86,7 +95,7 @@ export default function ProjectDetailsPage() {
 
   return (
     <div className="project-details">
-      <h1>{project.name}</h1>
+      <h1 style={{ color: "#333" }}>{project.name}</h1>
       <p className="description">{project.description}</p>
 
       <button className="add-task-btn" onClick={() => setShowForm(!showForm)}>
@@ -110,22 +119,43 @@ export default function ProjectDetailsPage() {
           <button type="submit">Créer</button>
         </form>
       )}
-  <div className="kanban-board">
-        {["TODO", "IN_PROGRESS", "DONE"].map((status) => (
-          <div key={status} className="kanban-column">
-            <h3>
-              {status === "TODO" && "📝 À faire"}
-              {status === "IN_PROGRESS" && "⚙️ En cours"}
-              {status === "DONE" && "✅ Terminées"}
-            </h3>
 
-            {groupedTasks[status].length === 0 ? (
-              <p className="empty-column">Aucune tâche</p>
-            ) : (
-              groupedTasks[status].map((t) => (
-                <div key={t.id} className="task-card">
-                  <h4>{t.title}</h4>
-                  <p>{t.description}</p>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <div className="kanban-board">
+          {["TODO", "IN_PROGRESS", "DONE"].map((status) => (
+            <Droppable droppableId={status} key={status}>
+              {(provided) => (
+                <div
+                  className="kanban-column"
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                >
+                  <h3>
+                    {status === "TODO" && "📝 À faire"}
+                    {status === "IN_PROGRESS" && "⚙️ En cours"}
+                    {status === "DONE" && "✅ Terminées"}
+                  </h3>
+
+                  {groupedTasks[status].length === 0 ? (
+                    <p className="empty-column">Aucune tâche</p>
+                  ) : (
+                    groupedTasks[status].map((t, index) => (
+                      <Draggable key={t.id} draggableId={t.id.toString()} index={index}>
+                        {(provided) => (
+                          <div
+                            className="task-card"
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                          >
+                            <h4>{t.title}</h4>
+                            <p>{t.description}</p>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))
+                  )}
+                  {provided.placeholder}
                 </div>
               )}
             </Droppable>
