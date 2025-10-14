@@ -16,7 +16,7 @@ export default function ProjectDetailsPage() {
       try {
         const [projData, taskData] = await Promise.all([
           fetchProjectById(id),
-          fetchTasksByProjectId(id)
+          fetchTasksByProjectId(id),
         ]);
         setProject(projData);
         setTasks(taskData);
@@ -33,47 +33,60 @@ export default function ProjectDetailsPage() {
   if (error) return <p>Erreur : {error}</p>;
   if (!project) return <p>Projet introuvable.</p>;
 
-  return (
-    <div style={{ padding: "20px" }}>
-      <h1>{project.name}</h1>
-      <p>{project.description}</p>
+  // 🧠 On trie les tâches selon leur statut
+  const todoTasks = tasks.filter((t) => t.status === "A_FAIRE" || t.status === "TODO");
+  const inProgressTasks = tasks.filter((t) => t.status === "EN_COURS" || t.status === "IN_PROGRESS");
+  const doneTasks = tasks.filter((t) => t.status === "TERMINEE" || t.status === "DONE");
 
-      <h2>Liste des tâches</h2>
-      {tasks.length === 0 ? (
-        <p>Aucune tâche pour ce projet.</p>
-      ) : (
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          {tasks.map((t) => (
-            <li
-              key={t.id}
-              style={{
-                padding: "10px",
-                borderBottom: "1px solid #ddd",
-                display: "flex",
-                justifyContent: "space-between"
-              }}
-            >
-              <span>
-                <strong>{t.name}</strong> — {t.description}
-              </span>
-              <span
-                style={{
-                  backgroundColor:
-                    t.status === "TERMINEE"
-                      ? "#b9f6ca"
-                      : t.status === "EN_COURS"
-                      ? "#fff59d"
-                      : "#ffccbc",
-                  padding: "4px 8px",
-                  borderRadius: "6px"
-                }}
-              >
-                {t.status}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
+  return (
+    <div className="project-details">
+      <Link to="/home" className="back-link">← Retour</Link>
+      <h1 style={{ color: "#000000" }}>{project.name}</h1>
+      <p className="description">{project.description}</p>
+
+      <div className="kanban-board">
+        <div className="kanban-column">
+          <h3 className="column-title todo">À faire</h3>
+          {todoTasks.length === 0 ? (
+            <p className="empty">Aucune tâche</p>
+          ) : (
+            todoTasks.map((t) => (
+              <div key={t.id} className="task-card">
+                <h4>{t.name}</h4>
+                <p>{t.description}</p>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="kanban-column">
+          <h3 className="column-title in-progress">En cours</h3>
+          {inProgressTasks.length === 0 ? (
+            <p className="empty">Aucune tâche</p>
+          ) : (
+            inProgressTasks.map((t) => (
+              <div key={t.id} className="task-card">
+                <h4>{t.name}</h4>
+                <p>{t.description}</p>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="kanban-column">
+          <h3 className="column-title done">Terminée</h3>
+          {doneTasks.length === 0 ? (
+            <p className="empty">Aucune tâche</p>
+          ) : (
+            doneTasks.map((t) => (
+              <div key={t.id} className="task-card">
+                <h4>{t.name}</h4>
+                <p>{t.description}</p>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     </div>
   );
 }

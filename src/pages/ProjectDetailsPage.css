@@ -1,8 +1,8 @@
 .project-details {
-  max-width: 700px;
-  margin: 40px auto;
+  max-width: 1200px;
+  margin: 30px auto;
   padding: 20px;
-  background: white;
+  background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
@@ -12,6 +12,7 @@
   margin-bottom: 20px;
   color: #29b8f5;
   text-decoration: none;
+  font-weight: 500;
 }
 
 .back-link:hover {
@@ -21,21 +22,75 @@
 .description {
   font-size: 1rem;
   color: #555;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
-.details-box {
-  background: #f5faff;
+/* 🟦 Kanban layout */
+.kanban-board {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.kanban-column {
+  flex: 1;
+  min-width: 300px;
+  background: #f9fafc;
   padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+}
+
+.column-title {
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 15px;
+  padding: 8px;
+  border-radius: 6px;
+  color: white;
+}
+
+.column-title.todo {
+  background-color: #ff6f61;
+}
+
+.column-title.in-progress {
+  background-color: #ffd54f;
+  color: #333;
+}
+
+.column-title.done {
+  background-color: #66bb6a;
+}
+
+.task-card {
+  background: white;
   border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.details-box ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.task-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
-.details-box li {
-  margin-bottom: 8px;
+.task-card h4 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  color: #222;
+}
+
+.task-card p {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.empty {
+  color: #999;
+  font-style: italic;
+  text-align: center;
 }
