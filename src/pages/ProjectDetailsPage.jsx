@@ -64,7 +64,7 @@ export default function ProjectDetailsPage() {
 
   return (
     <div className="project-details">
-      <h1>{project.name}</h1>
+      <h1 style={{ color: "#333" }}>{project.name}</h1>
       <p className="description">{project.description}</p>
 
       <button className="add-task-btn" onClick={() => setShowForm(!showForm)}>
