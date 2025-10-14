@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { fetchProjectById } from "../api/projectApi";
 import { fetchTasksByProjectId } from "../api/taskApi";
 import "./ProjectDetailsPage.css";
@@ -16,7 +16,7 @@ export default function ProjectDetailsPage() {
       try {
         const [projData, taskData] = await Promise.all([
           fetchProjectById(id),
-          fetchTasksByProjectId(id)
+          fetchTasksByProjectId(id),
         ]);
         setProject(projData);
         setTasks(taskData);
@@ -33,47 +33,48 @@ export default function ProjectDetailsPage() {
   if (error) return <p>Erreur : {error}</p>;
   if (!project) return <p>Projet introuvable.</p>;
 
-  return (
-    <div style={{ padding: "20px" }}>
-      <h1>{project.name}</h1>
-      <p>{project.description}</p>
+  // Groupement des tâches par statut
+  const groupedTasks = {
+    A_FAIRE: tasks.filter((t) => t.status === "A_FAIRE" || t.status === "TODO"),
+    EN_COURS: tasks.filter((t) => t.status === "EN_COURS" || t.status === "IN_PROGRESS"),
+    TERMINEE: tasks.filter((t) => t.status === "TERMINEE" || t.status === "DONE"),
+  };
 
-      <h2>Liste des tâches</h2>
-      {tasks.length === 0 ? (
-        <p>Aucune tâche pour ce projet.</p>
-      ) : (
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          {tasks.map((t) => (
-            <li
-              key={t.id}
-              style={{
-                padding: "10px",
-                borderBottom: "1px solid #ddd",
-                display: "flex",
-                justifyContent: "space-between"
-              }}
-            >
-              <span>
-                <strong>{t.name}</strong> — {t.description}
-              </span>
-              <span
-                style={{
-                  backgroundColor:
-                    t.status === "TERMINEE"
-                      ? "#b9f6ca"
-                      : t.status === "EN_COURS"
-                      ? "#fff59d"
-                      : "#ffccbc",
-                  padding: "4px 8px",
-                  borderRadius: "6px"
-                }}
-              >
-                {t.status}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
+  return (
+    <div className="project-detail-container">
+      <header className="project-header">
+        <div className="logo">tempo.</div>
+        <div className="actions">
+          <button className="btn-primary">Nouvelle tâche</button>
+          <button className="btn-secondary">Gérer</button>
+        </div>
+      </header>
+
+      <h1 className="project-title">{project.name}</h1>
+
+      <div className="kanban-board">
+        {[
+          { title: "À faire", key: "A_FAIRE" },
+          { title: "En cours", key: "EN_COURS" },
+          { title: "Terminée", key: "TERMINEE" },
+        ].map((col) => (
+          <div key={col.key} className="kanban-column">
+            <h3>{col.title}</h3>
+            <div className="task-column">
+              {groupedTasks[col.key].length > 0 ? (
+                groupedTasks[col.key].map((t) => (
+                  <div key={t.id} className="task-card">
+                    <strong>{t.name}</strong>
+                    <p>{t.description}</p>
+                  </div>
+                ))
+              ) : (
+                <p className="empty-column">Aucune tâche</p>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
