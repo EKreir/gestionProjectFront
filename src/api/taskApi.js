@@ -7,3 +7,19 @@ export async function fetchTasksByProjectId(projectId) {
   }
   return await response.json();
 }
+
+export async function createTask(taskData) {
+  const response = await fetch(`${API_BASE}/tasks`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(taskData),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Erreur ${response.status}`);
+  }
+
+  return await response.json();
+}

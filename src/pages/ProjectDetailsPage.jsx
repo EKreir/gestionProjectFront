@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { fetchProjectById } from "../api/projectApi";
-import { fetchTasksByProjectId } from "../api/taskApi";
+import { fetchTasksByProjectId, createTask } from "../api/taskApi";
 import "./ProjectDetailsPage.css";
 
 export default function ProjectDetailsPage() {
@@ -10,13 +10,15 @@ export default function ProjectDetailsPage() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [newTask, setNewTask] = useState({ title: "", description: "" });
 
   useEffect(() => {
     async function loadData() {
       try {
         const [projData, taskData] = await Promise.all([
           fetchProjectById(id),
-          fetchTasksByProjectId(id),
+          fetchTasksByProjectId(id)
         ]);
         setProject(projData);
         setTasks(taskData);
@@ -29,63 +31,85 @@ export default function ProjectDetailsPage() {
     loadData();
   }, [id]);
 
+  async function handleCreateTask(e) {
+    e.preventDefault();
+    if (!newTask.title.trim()) return alert("Le titre de la tâche est obligatoire.");
+
+    try {
+      const created = await createTask({
+        title: newTask.title,
+        description: newTask.description,
+        status: "TODO", // Statut initial attendu par ton back
+        projectId: id,
+      });
+
+      setTasks([...tasks, created]);
+      setShowForm(false);
+      setNewTask({ title: "", description: "" });
+    } catch (err) {
+      alert("Erreur lors de la création de la tâche : " + err.message);
+    }
+  }
+
   if (loading) return <p>Chargement du projet...</p>;
   if (error) return <p>Erreur : {error}</p>;
   if (!project) return <p>Projet introuvable.</p>;
 
-  // 🧠 On trie les tâches selon leur statut
-  const todoTasks = tasks.filter((t) => t.status === "A_FAIRE" || t.status === "TODO");
-  const inProgressTasks = tasks.filter((t) => t.status === "EN_COURS" || t.status === "IN_PROGRESS");
-  const doneTasks = tasks.filter((t) => t.status === "TERMINEE" || t.status === "DONE");
+  // Regroupement des tâches par statut
+  const groupedTasks = {
+    TODO: tasks.filter(t => t.status === "TODO"),
+    IN_PROGRESS: tasks.filter(t => t.status === "IN_PROGRESS"),
+    DONE: tasks.filter(t => t.status === "DONE"),
+  };
 
   return (
     <div className="project-details">
-      <Link to="/home" className="back-link">← Retour</Link>
-      <h1 style={{ color: "#000000" }}>{project.name}</h1>
+      <h1>{project.name}</h1>
       <p className="description">{project.description}</p>
 
+      <button className="add-task-btn" onClick={() => setShowForm(!showForm)}>
+        ➕ Ajouter une tâche
+      </button>
+
+      {showForm && (
+        <form onSubmit={handleCreateTask} className="task-form">
+          <input
+            type="text"
+            placeholder="Titre de la tâche"
+            value={newTask.title}
+            onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+            required
+          />
+          <textarea
+            placeholder="Description"
+            value={newTask.description}
+            onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+          />
+          <button type="submit">Créer</button>
+        </form>
+      )}
+
       <div className="kanban-board">
-        <div className="kanban-column">
-          <h3 className="column-title todo">À faire</h3>
-          {todoTasks.length === 0 ? (
-            <p className="empty">Aucune tâche</p>
-          ) : (
-            todoTasks.map((t) => (
-              <div key={t.id} className="task-card">
-                <h4>{t.name}</h4>
-                <p>{t.description}</p>
-              </div>
-            ))
-          )}
-        </div>
+        {["TODO", "IN_PROGRESS", "DONE"].map((status) => (
+          <div key={status} className="kanban-column">
+            <h3>
+              {status === "TODO" && "📝 À faire"}
+              {status === "IN_PROGRESS" && "⚙️ En cours"}
+              {status === "DONE" && "✅ Terminées"}
+            </h3>
 
-        <div className="kanban-column">
-          <h3 className="column-title in-progress">En cours</h3>
-          {inProgressTasks.length === 0 ? (
-            <p className="empty">Aucune tâche</p>
-          ) : (
-            inProgressTasks.map((t) => (
-              <div key={t.id} className="task-card">
-                <h4>{t.name}</h4>
-                <p>{t.description}</p>
-              </div>
-            ))
-          )}
-        </div>
-
-        <div className="kanban-column">
-          <h3 className="column-title done">Terminée</h3>
-          {doneTasks.length === 0 ? (
-            <p className="empty">Aucune tâche</p>
-          ) : (
-            doneTasks.map((t) => (
-              <div key={t.id} className="task-card">
-                <h4>{t.name}</h4>
-                <p>{t.description}</p>
-              </div>
-            ))
-          )}
-        </div>
+            {groupedTasks[status].length === 0 ? (
+              <p className="empty-column">Aucune tâche</p>
+            ) : (
+              groupedTasks[status].map((t) => (
+                <div key={t.id} className="task-card">
+                  <h4>{t.title}</h4>
+                  <p>{t.description}</p>
+                </div>
+              ))
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
