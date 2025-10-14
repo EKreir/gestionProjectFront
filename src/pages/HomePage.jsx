@@ -36,9 +36,12 @@ export default function HomePage() {
             <li key={p.id} style={{ marginBottom: "10px" }}>
               <Link
                 to={`/projects/${p.id}`}
+                style={{ textDecoration: "none", color: "inherit" }}
                 className="project-item"
               >
-                <strong className="project-name">{p.name}</strong>
+                <strong
+                style={{ color: "#262626" }}
+                className="project-name">{p.name}</strong>
                 <p
                   className="project-description"
                 >

@@ -78,6 +78,7 @@
 .project-item:hover {
   background-color: #eef5ff;
   transform: translateY(-2px);
+  text-decoration: none;
 }
 
 .project-name {
