@@ -1,22 +1,11 @@
 /*
 .project-details {
-  max-width: 700px;
+  max-width: 1200px;
   margin: 40px auto;
   padding: 20px;
-  background: white;
+  background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.back-link {
-  display: inline-block;
-  margin-bottom: 20px;
-  color: #29b8f5;
-  text-decoration: none;
-}
-
-.back-link:hover {
-  text-decoration: underline;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .description {
@@ -25,20 +14,97 @@
   margin-bottom: 20px;
 }
 
-.details-box {
-  background: #f5faff;
-  padding: 15px;
+/* --- Bouton ajouter --- */
+.add-task-btn {
+  background-color: #29b8f5;
+  color: white;
+  border: none;
+  padding: 10px 16px;
   border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: background-color 0.2s;
 }
 
-.details-box ul {
-  list-style: none;
-  padding: 0;
+.add-task-btn:hover {
+  background-color: #1da1e0;
+}
+
+/* --- Formulaire --- */
+.task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.task-form input,
+.task-form textarea {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.task-form button {
+  background-color: #29b8f5;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.task-form button:hover {
+  background-color: #1da1e0;
+}
+
+/* --- Kanban --- */
+.kanban-board {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.kanban-column {
+  flex: 1;
+  background: #f8faff;
+  border-radius: 10px;
+  padding: 12px;
+  min-height: 250px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.kanban-column h3 {
+  text-align: center;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.empty-column {
+  text-align: center;
+  color: #aaa;
+  font-style: italic;
+}
+
+.task-card {
+  background: white;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.task-card h4 {
+  margin: 0 0 6px 0;
+  color: #222;
+}
+
+.task-card p {
   margin: 0;
-}
-
-.details-box li {
-  margin-bottom: 8px;
+  color: #555;
+  font-size: 0.9rem;
 }
 */
 
