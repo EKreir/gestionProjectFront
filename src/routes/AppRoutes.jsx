@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import LoginPage from "../pages/LoginPage";
 import HomePage from "../pages/HomePage";
+import ProjectDetailsPage from "../pages/ProjectDetailsPage";
+
 
 export default function AppRouter() {
   return (
@@ -14,6 +16,8 @@ export default function AppRouter() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/home" element={<HomePage />} />
+        <Route path="/projects/:id" element={<ProjectDetailsPage />} />
+
       </Routes>
     </Router>
   );

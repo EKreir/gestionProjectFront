@@ -1,0 +1,41 @@
+.project-details {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 20px;
+  color: #29b8f5;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.description {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.details-box {
+  background: #f5faff;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.details-box ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.details-box li {
+  margin-bottom: 8px;
+}
