@@ -18,7 +18,7 @@ export default function ProjectDetailsPage() {
       try {
         const [projData, taskData] = await Promise.all([
           fetchProjectById(id),
-          fetchTasksByProjectId(id),
+          fetchTasksByProjectId(id)
         ]);
         setProject(projData);
         setTasks(taskData);
@@ -53,8 +53,8 @@ export default function ProjectDetailsPage() {
 
   if (loading) return <p>Chargement du projet...</p>;
   if (error) return <p>Erreur : {error}</p>;
-  if (!project) return <p>Projet introuvable.</p>;
-
+  if (!project) return <p>Projet introuvable.</p>; 
+  
   // Regroupement des tâches par statut
   const groupedTasks = {
     TODO: tasks.filter(t => t.status === "TODO"),
@@ -88,8 +88,7 @@ export default function ProjectDetailsPage() {
           <button type="submit">Créer</button>
         </form>
       )}
-
-      <div className="kanban-board">
+  <div className="kanban-board">
         {["TODO", "IN_PROGRESS", "DONE"].map((status) => (
           <div key={status} className="kanban-column">
             <h3>
