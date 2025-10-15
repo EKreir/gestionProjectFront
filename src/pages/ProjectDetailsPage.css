@@ -143,3 +143,50 @@ body {
   margin-bottom: 10px;
   height: 50px;
 }
+
+
+
+.task-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+textarea {
+  background-color: white;
+  color: black;
+}
+
+.btn-save {
+  background-color: #29b8f5;
+  color: white;
+  border: none;
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-cancel {
+  background-color: #e53935;
+  color: white;
+  border: none;
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-edit {
+  margin-top: 5px;
+  background: none;
+  border: 1px solid #29b8f5;
+  color: #29b8f5;
+  border-radius: 4px;
+  padding: 4px 6px;
+  cursor: pointer;
+}
+
+.btn-edit:hover {
+  background-color: #29b8f5;
+  color: white;
+}
+

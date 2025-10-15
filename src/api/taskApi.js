@@ -23,3 +23,14 @@ export async function createTask(taskData) {
 
   return await response.json();
 }
+
+/* ✅ NOUVELLE MÉTHODE PUT POUR LA MISE À JOUR */
+export async function updateTask(id, updatedData) {
+  const response = await fetch(`${API_BASE}/tasks/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updatedData),
+  });
+  if (!response.ok) throw new Error(`Erreur ${response.status}`);
+  return await response.json();
+}
