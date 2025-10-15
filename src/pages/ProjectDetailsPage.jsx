@@ -2,10 +2,14 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { fetchProjectById } from "../api/projectApi";
-import { fetchTasksByProjectId, createTask, updateTask } from "../api/taskApi";
+import {
+  fetchTasksByProjectId,
+  createTask,
+  updateTask,
+  deleteTask,
+} from "../api/taskApi";
 import TaskEditModal from "../components/TaskEditModal";
 import "./ProjectDetailsPage.css";
-
 
 export default function ProjectDetailsPage() {
   const { id } = useParams();
@@ -64,6 +68,16 @@ export default function ProjectDetailsPage() {
     }
   }
 
+  async function handleDeleteTask(taskId) {
+    try {
+      await deleteTask(taskId);
+      setTasks((prev) => prev.filter((t) => t.id !== taskId));
+      setSelectedTask(null);
+    } catch (err) {
+      alert("Erreur lors de la suppression : " + err.message);
+    }
+  }
+
   async function onDragEnd(result) {
     const { destination, source, draggableId } = result;
     if (!destination) return;
@@ -77,6 +91,7 @@ export default function ProjectDetailsPage() {
     const newStatus = destination.droppableId;
     const movedTask = tasks.find((t) => t.id === taskId);
     if (!movedTask) return;
+
     const prevTasks = tasks;
     const updatedTask = { ...movedTask, status: newStatus };
     setTasks((prev) => prev.map((t) => (t.id === taskId ? updatedTask : t)));
@@ -187,6 +202,7 @@ export default function ProjectDetailsPage() {
           task={selectedTask}
           onClose={() => setSelectedTask(null)}
           onSave={handleSaveTask}
+          onDelete={handleDeleteTask}
         />
       )}
     </div>

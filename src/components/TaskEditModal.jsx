@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./TaskEditModal.css";
 
-export default function TaskEditModal({ task, onClose, onSave }) {
+export default function TaskEditModal({ task, onClose, onSave, onDelete }) {
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -26,6 +26,12 @@ export default function TaskEditModal({ task, onClose, onSave }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave({ ...task, ...form });
+  };
+
+  const handleDelete = () => {
+    if (window.confirm("Voulez-vous vraiment supprimer cette tâche ?")) {
+      onDelete(task.id);
+    }
   };
 
   if (!task) return null;
@@ -71,12 +77,12 @@ export default function TaskEditModal({ task, onClose, onSave }) {
             <button type="submit" className="btn-save">
               💾 Enregistrer
             </button>
-            
           </div>
         </form>
-        <button type="submit" className="btn-delete">
-              ❌ Supprimer 
-          </button>
+
+        <button type="button" className="btn-delete" onClick={handleDelete}>
+          🗑️ Supprimer
+        </button>
       </div>
     </div>
   );
