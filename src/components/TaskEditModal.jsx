@@ -71,8 +71,12 @@ export default function TaskEditModal({ task, onClose, onSave }) {
             <button type="submit" className="btn-save">
               💾 Enregistrer
             </button>
+            
           </div>
         </form>
+        <button type="submit" className="btn-delete">
+              ❌ Supprimer 
+          </button>
       </div>
     </div>
   );

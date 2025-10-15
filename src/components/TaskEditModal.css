@@ -86,7 +86,7 @@
 }
 
 .btn-cancel {
-  background-color: #e53935;
+  background-color: #f5f5f5;
   color: white;
   border: none;
   padding: 8px 14px;
@@ -94,6 +94,21 @@
   cursor: pointer;
 }
 
+.btn-delete {
+  background-color: #d80606;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  margin-top: 8px;
+  cursor: pointer;
+
+}
+
+.btn-delete:hover {
+    background-color: #950505;
+
+}
 .btn-cancel:hover {
   background-color: #c62828;
 }

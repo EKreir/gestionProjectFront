@@ -7,7 +7,7 @@
 
 body {
   font-family: Arial, sans-serif;
-  background-color: #D9D9D9; /* fond gris clair */
+  background-color: #D9D9D9;
   margin: 0;
   padding: 0;
   display: flex;
@@ -16,12 +16,12 @@ body {
 
 /* --- Project details container --- */
 .project-details {
-  max-width: 1200px;
+  max-width: 100%;
   margin: 40px auto;
   padding: 20px;
   background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .description {
@@ -84,13 +84,18 @@ body {
   gap: 20px;
 }
 
+/* --- Kanban column --- */
 .kanban-column {
   flex: 1;
   background: #f8faff;
   border-radius: 10px;
   padding: 15px;
-  min-height: 250px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  min-width: 200px;
+  max-width: 200px;
+  max-height: 700px; /* Limite de hauteur visible */
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   transition: background-color 0.2s;
 }
 
@@ -101,6 +106,23 @@ body {
   font-size: 1.1rem;
 }
 
+.task-list {
+  overflow-y: auto;
+  flex-grow: 1;
+  padding-right: 4px;
+}
+
+/* Scrollbar personnalisée (facultatif) */
+.task-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.task-list::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 6px;
+}
+
+/* --- Vide colonne --- */
 .empty-column {
   text-align: center;
   color: #aaa;
@@ -114,13 +136,13 @@ body {
   border-radius: 8px;
   padding: 12px;
   margin-bottom: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .task-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .task-card h4 {
@@ -144,8 +166,7 @@ body {
   height: 50px;
 }
 
-
-
+/* --- Actions boutons (modal etc.) --- */
 .task-actions {
   display: flex;
   gap: 8px;
@@ -189,4 +210,3 @@ textarea {
   background-color: #29b8f5;
   color: white;
 }
-

@@ -6,6 +6,7 @@ import { fetchTasksByProjectId, createTask, updateTask } from "../api/taskApi";
 import TaskEditModal from "../components/TaskEditModal";
 import "./ProjectDetailsPage.css";
 
+
 export default function ProjectDetailsPage() {
   const { id } = useParams();
   const [project, setProject] = useState(null);
@@ -14,9 +15,8 @@ export default function ProjectDetailsPage() {
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [newTask, setNewTask] = useState({ title: "", description: "" });
-  const [selectedTask, setSelectedTask] = useState(null); // 🔹 Popup active
+  const [selectedTask, setSelectedTask] = useState(null);
 
-  // 🔹 Charger projet + tâches
   useEffect(() => {
     async function loadData() {
       try {
@@ -35,7 +35,6 @@ export default function ProjectDetailsPage() {
     loadData();
   }, [id]);
 
-  // 🔹 Créer une nouvelle tâche
   async function handleCreateTask(e) {
     e.preventDefault();
     if (!newTask.title.trim()) return alert("Le titre est obligatoire.");
@@ -55,20 +54,16 @@ export default function ProjectDetailsPage() {
     }
   }
 
-  // 🔹 Enregistrer une tâche modifiée depuis la popup
   async function handleSaveTask(updatedTask) {
     try {
       const saved = await updateTask(updatedTask.id, updatedTask);
-      setTasks((prev) =>
-        prev.map((t) => (t.id === saved.id ? saved : t))
-      );
+      setTasks((prev) => prev.map((t) => (t.id === saved.id ? saved : t)));
       setSelectedTask(null);
     } catch (err) {
       alert("Erreur lors de la mise à jour : " + err.message);
     }
   }
 
-  // 🔹 Drag & drop + persistance API
   async function onDragEnd(result) {
     const { destination, source, draggableId } = result;
     if (!destination) return;
@@ -79,7 +74,7 @@ export default function ProjectDetailsPage() {
       return;
 
     const taskId = Number(draggableId);
-    const newStatus = destination.droppableId; // "TODO" | "IN_PROGRESS" | "DONE"
+    const newStatus = destination.droppableId;
     const movedTask = tasks.find((t) => t.id === taskId);
     if (!movedTask) return;
     const prevTasks = tasks;
@@ -87,12 +82,11 @@ export default function ProjectDetailsPage() {
     setTasks((prev) => prev.map((t) => (t.id === taskId ? updatedTask : t)));
 
     try {
-      // --- API call ---
       await updateTask(taskId, { status: newStatus });
     } catch (err) {
       console.error("Échec de mise à jour du statut :", err);
       alert("Impossible de mettre à jour le statut, rollback.");
-      setTasks(prevTasks); // rollback
+      setTasks(prevTasks);
     }
   }
 
@@ -100,7 +94,6 @@ export default function ProjectDetailsPage() {
   if (error) return <p>Erreur : {error}</p>;
   if (!project) return <p>Projet introuvable.</p>;
 
-  // 🔹 Grouper les tâches par statut
   const groupedTasks = {
     TODO: tasks.filter((t) => t.status === "TODO"),
     IN_PROGRESS: tasks.filter((t) => t.status === "IN_PROGRESS"),
@@ -112,7 +105,6 @@ export default function ProjectDetailsPage() {
       <h1 style={{ color: "#333" }}>{project.name}</h1>
       <p className="description">{project.description}</p>
 
-      {/* Ajouter une tâche */}
       <button className="add-task-btn" onClick={() => setShowForm(!showForm)}>
         ➕ Ajouter une tâche
       </button>
@@ -137,7 +129,6 @@ export default function ProjectDetailsPage() {
         </form>
       )}
 
-      {/* Kanban */}
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="kanban-board">
           {["TODO", "IN_PROGRESS", "DONE"].map((status) => (
@@ -154,34 +145,36 @@ export default function ProjectDetailsPage() {
                     {status === "DONE" && "✅ Terminées"}
                   </h3>
 
-                  {groupedTasks[status].length === 0 ? (
-                    <p className="empty-column">Aucune tâche</p>
-                  ) : (
-                    groupedTasks[status].map((t, index) => (
-                      <Draggable
-                        key={t.id}
-                        draggableId={t.id.toString()}
-                        index={index}
-                      >
-                        {(provided) => (
-                          <div
-                            className="task-card"
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            onDoubleClick={() => setSelectedTask(t)} // 🔹 ouvre la popup
-                          >
-                            <h4>{t.title}</h4>
-                            <p>{t.description}</p>
-                            <small className="edit-hint">
-                              (Double-cliquez pour modifier)
-                            </small>
-                          </div>
-                        )}
-                      </Draggable>
-                    ))
-                  )}
-                  {provided.placeholder}
+                  <div className="task-list">
+                    {groupedTasks[status].length === 0 ? (
+                      <p className="empty-column">Aucune tâche</p>
+                    ) : (
+                      groupedTasks[status].map((t, index) => (
+                        <Draggable
+                          key={t.id}
+                          draggableId={t.id.toString()}
+                          index={index}
+                        >
+                          {(provided) => (
+                            <div
+                              className="task-card"
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              onDoubleClick={() => setSelectedTask(t)}
+                            >
+                              <h4>{t.title}</h4>
+                              <p>{t.description}</p>
+                              <small className="edit-hint">
+                                (Double-cliquez pour modifier)
+                              </small>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))
+                    )}
+                    {provided.placeholder}
+                  </div>
                 </div>
               )}
             </Droppable>
@@ -189,7 +182,6 @@ export default function ProjectDetailsPage() {
         </div>
       </DragDropContext>
 
-      {/* 🔹 Popup d'édition */}
       {selectedTask && (
         <TaskEditModal
           task={selectedTask}
