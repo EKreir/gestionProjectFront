@@ -8,7 +8,6 @@ export default function AppRouter() {
   return (
     <Router>
       <nav style={{ marginBottom: "20px" }}>
-        <Link to="/">Accueil</Link> | {" "}
         <Link to="/login">Connexion</Link> | {" "}
         <Link to="/home">Accueil</Link>
       </nav>

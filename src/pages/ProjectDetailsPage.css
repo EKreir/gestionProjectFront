@@ -24,6 +24,9 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+
+
+
 .description {
   font-size: 1rem;
   color: #555;
@@ -222,6 +225,9 @@ textarea {
   margin-bottom: 10px;
 }
 
+
+
+
 .edit-project-description {
   width: 100%;
   padding: 6px;
@@ -232,4 +238,48 @@ textarea {
   font-size: 1rem;
   color: #333;
   margin-bottom: 20px;
+}
+
+.clickable-hover:hover {
+  color: #343232;
+  opacity: 0.5;
+}
+
+.clickable-hover {
+  cursor: pointer;
+  transition: color 0.2s ease, text-decoration 0.2s ease;
+}
+
+
+
+.project-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* titre à gauche, bouton à droite */
+  margin-bottom: 16px;
+}
+
+.project-title {
+  margin: 0;
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: #333;
+  width: 80%;
+}
+
+.delete-project-btn {
+  background-color: #ff4d4f;
+  color: white;
+  border: none;
+  padding: 4px 10px;  /* bouton plus petit */
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+  width: 15%;
+}
+
+.delete-project-btn:hover {
+  background-color: #d9363e;
 }

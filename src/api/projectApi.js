@@ -36,3 +36,11 @@ export async function updateProject(id, updatedData) {
   if (!response.ok) throw new Error(`Erreur ${response.status}`);
   return await response.json();
 }
+
+export async function deleteProject(id) {
+  const response = await fetch(`${API_BASE}/projects/${id}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) throw new Error(`Erreur ${response.status}`);
+  return true; 
+}

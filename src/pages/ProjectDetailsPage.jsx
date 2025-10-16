@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { fetchProjectById, updateProject } from "../api/projectApi";
+import { fetchProjectById, updateProject, deleteProject} from "../api/projectApi";
 import {
   fetchTasksByProjectId,
   createTask,
@@ -53,7 +53,6 @@ export default function ProjectDetailsPage() {
       setProject(updated);
     } catch (err) {
       alert("Erreur lors de la mise à jour du projet : " + err.message);
-      // rollback si nécessaire
     }
   }
 
@@ -116,7 +115,6 @@ export default function ProjectDetailsPage() {
     setEditingDescription(false);
   };
 
-  // --- CRUD des tâches ---
   async function handleCreateTask(e) {
     e.preventDefault();
     if (!newTask.title.trim()) return alert("Le titre est obligatoire.");
@@ -192,26 +190,43 @@ export default function ProjectDetailsPage() {
 
   return (
     <div className="project-details">
-      {/* 🏷️ Édition du titre */}
-      {editingTitle ? (
-        <input
-          className="edit-project-title"
-          value={tempTitle}
-          onChange={(e) => setTempTitle(e.target.value)}
-          onKeyDown={handleTitleKey}
-          onBlur={handleTitleBlur}
-          autoFocus
-        />
-      ) : (
-        <h1
-          style={{ color: "#333", cursor: "pointer" }}
-          onClick={handleTitleClick}
-          title="Cliquez pour modifier le titre"
-        >
-          {project.name}
-        </h1>
-      )}
+     <div className="project-header">
+        {editingTitle ? (
+          <input
+            className="edit-project-title"
+            value={tempTitle}
+            onChange={(e) => setTempTitle(e.target.value)}
+            onKeyDown={handleTitleKey}
+            onBlur={handleTitleBlur}
+            autoFocus
+          />
+        ) : (
+          <h1
+            className="project-title clickable-hover"
+            onClick={handleTitleClick}
+            title="Cliquez pour modifier le titre"
+          >
+            {project.name}
+          </h1>
+        )}
 
+        <button
+          className="delete-project-btn"
+          onClick={async () => {
+            if (window.confirm("Voulez-vous vraiment supprimer ce projet ?")) {
+              try {
+                await deleteProject(project.id);
+                alert("Projet supprimé avec succès !");
+                window.location.href = "/home"; // redirection accueil
+              } catch (err) {
+                alert("Erreur lors de la suppression : " + err.message);
+              }
+            }
+          }}
+        >
+          🗑️
+        </button>
+      </div>
       {/* 📝 Édition de la description */}
       {editingDescription ? (
         <textarea
@@ -224,7 +239,7 @@ export default function ProjectDetailsPage() {
         />
       ) : (
         <p
-          className="description"
+          className="description clickable-hover"
           onClick={handleDescriptionClick}
           style={{ cursor: "pointer" }}
           title="Cliquez pour modifier la description"
@@ -233,6 +248,8 @@ export default function ProjectDetailsPage() {
         </p>
       )}
 
+
+     
       {/* --- Formulaire de création d’une tâche --- */}
       <button className="add-task-btn" onClick={() => setShowForm(!showForm)}>
         ➕ Ajouter une tâche
