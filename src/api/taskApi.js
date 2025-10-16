@@ -29,6 +29,17 @@ export async function updateTask(id, updatedData) {
   return await response.json();
 }
 
+export async function updateTaskStatus(id, status) {
+  const response = await fetch(`/api/tasks/${id}/status?status=${status}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!response.ok) throw new Error(`Erreur ${response.status}`);
+  return await response.json();
+}
+
+
+
 // 🔹 Supprimer une tâche
 export async function deleteTask(id) {
   const response = await fetch(`${API_BASE}/tasks/${id}`, {

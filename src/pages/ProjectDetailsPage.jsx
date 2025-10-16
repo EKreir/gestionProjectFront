@@ -6,6 +6,7 @@ import {
   fetchTasksByProjectId,
   createTask,
   updateTask,
+  updateTaskStatus,
   deleteTask,
 } from "../api/taskApi";
 import TaskEditModal from "../components/TaskEditModal";
@@ -21,7 +22,7 @@ export default function ProjectDetailsPage() {
   const [newTask, setNewTask] = useState({ title: "", description: "" });
   const [selectedTask, setSelectedTask] = useState(null);
 
-  // 📝 États pour édition du projet
+  // 📝 États pour édition inline du projet
   const [editingTitle, setEditingTitle] = useState(false);
   const [editingDescription, setEditingDescription] = useState(false);
   const [tempTitle, setTempTitle] = useState("");
@@ -52,36 +53,67 @@ export default function ProjectDetailsPage() {
       setProject(updated);
     } catch (err) {
       alert("Erreur lors de la mise à jour du projet : " + err.message);
+      // rollback si nécessaire
     }
   }
 
-  // 🖱️ Double clic sur le titre → mode édition
+  // --- Gestion inline du titre ---
   const handleTitleClick = () => {
     setTempTitle(project.name);
     setEditingTitle(true);
   };
 
+  const handleTitleKey = async (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const trimmed = tempTitle.trim();
+      if (!trimmed) {
+        setTempTitle(project.name);
+      } else if (trimmed !== project.name) {
+        await handleSaveProject({ name: trimmed });
+      }
+      setEditingTitle(false);
+    }
+    if (e.key === "Escape") {
+      setTempTitle(project.name);
+      setEditingTitle(false);
+    }
+  };
+
+  const handleTitleBlur = async () => {
+    const trimmed = tempTitle.trim();
+    if (!trimmed) setTempTitle(project.name);
+    else if (trimmed !== project.name) await handleSaveProject({ name: trimmed });
+    setEditingTitle(false);
+  };
+
+  // --- Gestion inline de la description ---
   const handleDescriptionClick = () => {
     setTempDescription(project.description || "");
     setEditingDescription(true);
   };
 
-  // ⏎ Sauvegarde du titre
-  const handleTitleKey = async (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      await handleSaveProject({ name: tempTitle });
-      setEditingTitle(false);
-    }
-  };
-
-  // ⏎ Sauvegarde de la description
   const handleDescriptionKey = async (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      await handleSaveProject({ description: tempDescription });
+      const trimmed = tempDescription.trim();
+      if (!trimmed) setTempDescription(project.description || "");
+      else if (trimmed !== project.description)
+        await handleSaveProject({ description: trimmed });
       setEditingDescription(false);
     }
+    if (e.key === "Escape") {
+      setTempDescription(project.description || "");
+      setEditingDescription(false);
+    }
+  };
+
+  const handleDescriptionBlur = async () => {
+    const trimmed = tempDescription.trim();
+    if (!trimmed) setTempDescription(project.description || "");
+    else if (trimmed !== project.description)
+      await handleSaveProject({ description: trimmed });
+    setEditingDescription(false);
   };
 
   // --- CRUD des tâches ---
@@ -124,31 +156,29 @@ export default function ProjectDetailsPage() {
   }
 
   async function onDragEnd(result) {
-    const { destination, source, draggableId } = result;
-    if (!destination) return;
-    if (
-      destination.droppableId === source.droppableId &&
-      destination.index === source.index
-    )
-      return;
+  const { destination, source, draggableId } = result;
+  if (!destination) return;
+  if (destination.droppableId === source.droppableId && destination.index === source.index)
+    return;
 
-    const taskId = Number(draggableId);
-    const newStatus = destination.droppableId;
-    const movedTask = tasks.find((t) => t.id === taskId);
-    if (!movedTask) return;
+  const taskId = Number(draggableId);
+  const newStatus = destination.droppableId;
+  const movedTask = tasks.find((t) => t.id === taskId);
+  if (!movedTask) return;
 
-    const prevTasks = tasks;
-    const updatedTask = { ...movedTask, status: newStatus };
-    setTasks((prev) => prev.map((t) => (t.id === taskId ? updatedTask : t)));
+  const prevTasks = [...tasks];
+  const updatedTask = { ...movedTask, status: newStatus };
+  setTasks((prev) => prev.map((t) => (t.id === taskId ? updatedTask : t)));
 
-    try {
-      await updateTask(taskId, { status: newStatus });
-    } catch (err) {
-      console.error("Échec de mise à jour du statut :", err);
-      alert("Impossible de mettre à jour le statut, rollback.");
-      setTasks(prevTasks);
-    }
+  try {
+    await updateTaskStatus(taskId, newStatus); // ✅ appelle la fonction corrigée
+  } catch (err) {
+    console.error("Échec de mise à jour du statut :", err);
+    alert("Impossible de mettre à jour le statut, rollback.");
+    setTasks(prevTasks);
   }
+}
+
 
   if (loading) return <p>Chargement du projet...</p>;
   if (error) return <p>Erreur : {error}</p>;
@@ -169,7 +199,7 @@ export default function ProjectDetailsPage() {
           value={tempTitle}
           onChange={(e) => setTempTitle(e.target.value)}
           onKeyDown={handleTitleKey}
-          onBlur={() => setEditingTitle(false)}
+          onBlur={handleTitleBlur}
           autoFocus
         />
       ) : (
@@ -189,7 +219,7 @@ export default function ProjectDetailsPage() {
           value={tempDescription}
           onChange={(e) => setTempDescription(e.target.value)}
           onKeyDown={handleDescriptionKey}
-          onBlur={() => setEditingDescription(false)}
+          onBlur={handleDescriptionBlur}
           autoFocus
         />
       ) : (
