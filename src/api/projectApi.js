@@ -25,3 +25,14 @@ export async function fetchProjectById(id) {
   if (!response.ok) throw new Error(`Erreur ${response.status}`);
   return await response.json();
 }
+
+// 🔹 Mettre à jour un projet (titre, description, etc.)
+export async function updateProject(id, updatedData) {
+  const response = await fetch(`${API_BASE}/projects/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updatedData),
+  });
+  if (!response.ok) throw new Error(`Erreur ${response.status}`);
+  return await response.json();
+}

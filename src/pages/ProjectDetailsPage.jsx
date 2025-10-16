@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { fetchProjectById } from "../api/projectApi";
+import { fetchProjectById, updateProject } from "../api/projectApi";
 import {
   fetchTasksByProjectId,
   createTask,
@@ -21,6 +21,12 @@ export default function ProjectDetailsPage() {
   const [newTask, setNewTask] = useState({ title: "", description: "" });
   const [selectedTask, setSelectedTask] = useState(null);
 
+  // 📝 États pour édition du projet
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [editingDescription, setEditingDescription] = useState(false);
+  const [tempTitle, setTempTitle] = useState("");
+  const [tempDescription, setTempDescription] = useState("");
+
   useEffect(() => {
     async function loadData() {
       try {
@@ -39,10 +45,49 @@ export default function ProjectDetailsPage() {
     loadData();
   }, [id]);
 
+  // ✅ Sauvegarder modification projet
+  async function handleSaveProject(updates) {
+    try {
+      const updated = await updateProject(id, { ...project, ...updates });
+      setProject(updated);
+    } catch (err) {
+      alert("Erreur lors de la mise à jour du projet : " + err.message);
+    }
+  }
+
+  // 🖱️ Double clic sur le titre → mode édition
+  const handleTitleClick = () => {
+    setTempTitle(project.name);
+    setEditingTitle(true);
+  };
+
+  const handleDescriptionClick = () => {
+    setTempDescription(project.description || "");
+    setEditingDescription(true);
+  };
+
+  // ⏎ Sauvegarde du titre
+  const handleTitleKey = async (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      await handleSaveProject({ name: tempTitle });
+      setEditingTitle(false);
+    }
+  };
+
+  // ⏎ Sauvegarde de la description
+  const handleDescriptionKey = async (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      await handleSaveProject({ description: tempDescription });
+      setEditingDescription(false);
+    }
+  };
+
+  // --- CRUD des tâches ---
   async function handleCreateTask(e) {
     e.preventDefault();
     if (!newTask.title.trim()) return alert("Le titre est obligatoire.");
-
     try {
       const created = await createTask({
         title: newTask.title,
@@ -117,9 +162,48 @@ export default function ProjectDetailsPage() {
 
   return (
     <div className="project-details">
-      <h1 style={{ color: "#333" }}>{project.name}</h1>
-      <p className="description">{project.description}</p>
+      {/* 🏷️ Édition du titre */}
+      {editingTitle ? (
+        <input
+          className="edit-project-title"
+          value={tempTitle}
+          onChange={(e) => setTempTitle(e.target.value)}
+          onKeyDown={handleTitleKey}
+          onBlur={() => setEditingTitle(false)}
+          autoFocus
+        />
+      ) : (
+        <h1
+          style={{ color: "#333", cursor: "pointer" }}
+          onClick={handleTitleClick}
+          title="Cliquez pour modifier le titre"
+        >
+          {project.name}
+        </h1>
+      )}
 
+      {/* 📝 Édition de la description */}
+      {editingDescription ? (
+        <textarea
+          className="edit-project-description"
+          value={tempDescription}
+          onChange={(e) => setTempDescription(e.target.value)}
+          onKeyDown={handleDescriptionKey}
+          onBlur={() => setEditingDescription(false)}
+          autoFocus
+        />
+      ) : (
+        <p
+          className="description"
+          onClick={handleDescriptionClick}
+          style={{ cursor: "pointer" }}
+          title="Cliquez pour modifier la description"
+        >
+          {project.description || "Aucune description"}
+        </p>
+      )}
+
+      {/* --- Formulaire de création d’une tâche --- */}
       <button className="add-task-btn" onClick={() => setShowForm(!showForm)}>
         ➕ Ajouter une tâche
       </button>
@@ -144,6 +228,7 @@ export default function ProjectDetailsPage() {
         </form>
       )}
 
+      {/* --- Kanban board --- */}
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="kanban-board">
           {["TODO", "IN_PROGRESS", "DONE"].map((status) => (
@@ -180,9 +265,6 @@ export default function ProjectDetailsPage() {
                             >
                               <h4>{t.title}</h4>
                               <p>{t.description}</p>
-                              <small className="edit-hint">
-                                (Double-cliquez pour modifier)
-                              </small>
                             </div>
                           )}
                         </Draggable>
@@ -197,6 +279,7 @@ export default function ProjectDetailsPage() {
         </div>
       </DragDropContext>
 
+      {/* --- Popup édition tâche --- */}
       {selectedTask && (
         <TaskEditModal
           task={selectedTask}

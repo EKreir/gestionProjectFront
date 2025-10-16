@@ -210,3 +210,26 @@ textarea {
   background-color: #29b8f5;
   color: white;
 }
+
+/* --- Styles édition du projet --- */
+.edit-project-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  padding: 6px;
+  width: 100%;
+  border: 2px solid #29b8f5;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.edit-project-description {
+  width: 100%;
+  padding: 6px;
+  border: 2px solid #29b8f5;
+  border-radius: 8px;
+  resize: none;
+  height: 60px;
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 20px;
+}
